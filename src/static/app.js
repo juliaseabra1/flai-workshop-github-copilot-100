@@ -7,7 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Function to fetch activities from API
   async function fetchActivities() {
     try {
-      const response = await fetch("/activities");
+      // always bypass any browser cache so we get the latest data
+      const response = await fetch("/activities", { cache: "no-store" });
       const activities = await response.json();
 
       // Clear loading message
@@ -58,6 +59,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 )}/unregister?email=${encodeURIComponent(email)}`,
                 {
                   method: "DELETE",
+                  // future-proof: make sure we don't cache DELETE results
+                  cache: "no-store",
                 }
               );
               const result = await response.json();
@@ -65,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
               if (response.ok) {
                 messageDiv.textContent = result.message;
                 messageDiv.className = "success";
-                fetchActivities(); // refresh list
+                await fetchActivities(); // refresh list and wait for update
               } else {
                 messageDiv.textContent = result.detail || "An error occurred";
                 messageDiv.className = "error";
@@ -107,6 +110,8 @@ document.addEventListener("DOMContentLoaded", () => {
         `/activities/${encodeURIComponent(activity)}/signup?email=${encodeURIComponent(email)}`,
         {
           method: "POST",
+          // ensure we don't hit any stale caches, though POST usually bypasses them
+          cache: "no-store",
         }
       );
 
@@ -117,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
         messageDiv.className = "success";
         signupForm.reset();
         // Refresh activity list so new participant appears immediately
-        fetchActivities();
+        await fetchActivities();
       } else {
         messageDiv.textContent = result.detail || "An error occurred";
         messageDiv.className = "error";
